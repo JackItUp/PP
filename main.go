@@ -2,85 +2,136 @@ package main
 
 import "fmt"
 
-type queue struct {
-	s         []any
-	low, high int
-	size      int
+type singlyLinkedList struct {
+	first *item
+	last  *item
+	size  int
 }
 
-func newQueue(size int) *queue {
-	return &queue{
-		s:    make([]any, size),
-		size: size,
-		low:  -1,
-		high: -1,
+type item struct {
+	v    any
+	next *item
+}
+
+func newSinglyLinkedList() *singlyLinkedList {
+	return &singlyLinkedList{
+		first: nil,
+		last:  nil,
+		size:  0,
 	}
 }
 
-// push - добавление в очередь значения
-func push(q *queue, v any) bool {
-	if q.high == q.size-1 {
-		return false // очередь переполнена
+// add - добавление значения в связный список (пушбэк)
+func add(l *singlyLinkedList, v any) {
+	newItem := &item{v: v, next: nil}
+
+	if l.size == 0 {
+		l.first = newItem
+		l.last = newItem
+	} else {
+		l.last.next = newItem
+		l.last = newItem
 	}
-	if q.low == -1 {
-		q.low = 0
+	l.size++
+}
+
+// addFirst - добавление значения в начало списка
+func addFirst(l *singlyLinkedList, v any) {
+	newItem := &item{v: v, next: l.first}
+	l.first = newItem
+	if l.size == 0 {
+		l.last = newItem
 	}
-	q.high++
-	q.s[q.high] = v
+	l.size++
+}
+
+// get - получение значения по индексу из связанного списка
+func get(l *singlyLinkedList, idx int) any {
+	if idx < 0 || idx >= l.size {
+		return nil
+	}
+
+	current := l.first
+	for i := 0; i < idx; i++ {
+		current = current.next
+	}
+	return current.v
+}
+
+// remove - удаление значения по индексу из списка
+func remove(l *singlyLinkedList, idx int) bool {
+	if idx < 0 || idx >= l.size {
+		return false
+	}
+
+	if idx == 0 {
+		l.first = l.first.next
+		if l.size == 1 {
+			l.last = nil
+		}
+		l.size--
+		return true
+	}
+
+	current := l.first
+	for i := 0; i < idx-1; i++ {
+		current = current.next
+	}
+
+	current.next = current.next.next
+	if idx == l.size-1 {
+		l.last = current
+	}
+	l.size--
 	return true
 }
 
-// pop - получения значения из очереди и его удаление
-func pop(q *queue) any {
-	if q.low == -1 || q.low > q.high {
-		return nil // очередь пуста
+// values - получение слайса значений из списка
+func values(l *singlyLinkedList) []any {
+	result := make([]any, l.size)
+	current := l.first
+	for i := 0; i < l.size; i++ {
+		result[i] = current.v
+		current = current.next
 	}
-	v := q.s[q.low]
-	q.low++
-	return v
+	return result
 }
 
-// peek - просмотр первого элемента очереди
-func peek(q *queue) any {
-	if q.low == -1 || q.low > q.high {
-		return nil
-	}
-	return q.s[q.low]
+// size - получение размера списка
+func size(l *singlyLinkedList) int {
+	return l.size
 }
 
-// isEmpty - проверка очереди на пустоту
-func isEmpty(q *queue) bool {
-	return q.low == -1 || q.low > q.high
-}
-
-// isFull - проверка очереди на заполненность
-func isFull(q *queue) bool {
-	return q.high == q.size-1
-}
-
-// printQueue - вывод очереди
-func printQueue(q *queue) {
-	if q.low == -1 || q.low > q.high {
-		fmt.Println("Очередь пуста")
+// print - вывод списка
+func printList(l *singlyLinkedList) {
+	if l.size == 0 {
+		fmt.Println("Список пуст")
 		return
 	}
-	fmt.Print("Очередь (слева направо): ")
-	for i := q.low; i <= q.high; i++ {
-		fmt.Print(q.s[i], " ")
+	fmt.Print("Список: ")
+	current := l.first
+	for current != nil {
+		fmt.Print(current.v, " ")
+		current = current.next
 	}
 	fmt.Println()
 }
+
 func main() {
-	fmt.Println("Очередь")
+	fmt.Println("Список")
 
-	q := newQueue(5)
+	l := newSinglyLinkedList()
 
-	push(q, "a")
-	push(q, "b")
-	push(q, "c")
+	add(l, 100)
+	add(l, 200)
+	add(l, 300)
+	addFirst(l, 50)
 
-	printQueue(q)
+	printList(l)
 
-	fmt.Println("Pop:", pop(q))
-	printQueue(q)
+	fmt.Println("Get(2):", get(l, 2))
+
+	remove(l, 1)
+
+	printList(l) // Список: 50 → 200 → 300 → nil
 }
