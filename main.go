@@ -2,87 +2,85 @@ package main
 
 import "fmt"
 
-type stack struct {
-	s    []any // слайс в котором хранятся значения в стеке
-	head int   // индекс головы стека
+type queue struct {
+	s         []any
+	low, high int
+	size      int
 }
 
-func newStack(size int) *stack {
-	return &stack{
+func newQueue(size int) *queue {
+	return &queue{
 		s:    make([]any, size),
-		head: -1,
+		size: size,
+		low:  -1,
+		high: -1,
 	}
 }
 
-// push - добавление в стек значения
-func push(s *stack, v any) bool {
-	if s.head == len(s.s)-1 {
-		return false // стек переполнен
+// push - добавление в очередь значения
+func push(q *queue, v any) bool {
+	if q.high == q.size-1 {
+		return false // очередь переполнена
 	}
-	s.head++
-	s.s[s.head] = v
+	if q.low == -1 {
+		q.low = 0
+	}
+	q.high++
+	q.s[q.high] = v
 	return true
 }
 
-// pop - получения значения из стека и его удаление из вершины
-func pop(s *stack) any {
-	if s.head == -1 {
-		return nil // стек пуст
+// pop - получения значения из очереди и его удаление
+func pop(q *queue) any {
+	if q.low == -1 || q.low > q.high {
+		return nil // очередь пуста
 	}
-	v := s.s[s.head]
-	s.head--
+	v := q.s[q.low]
+	q.low++
 	return v
 }
 
-// peek - просмотр значения на вершине стека
-func peek(s *stack) any {
-	if s.head == -1 {
+// peek - просмотр первого элемента очереди
+func peek(q *queue) any {
+	if q.low == -1 || q.low > q.high {
 		return nil
 	}
-	return s.s[s.head]
+	return q.s[q.low]
 }
 
-// isEmpty - проверка стека на пустоту
-func isEmpty(s *stack) bool {
-	return s.head == -1
+// isEmpty - проверка очереди на пустоту
+func isEmpty(q *queue) bool {
+	return q.low == -1 || q.low > q.high
 }
 
-// isFull - проверка стека на заполненность
-func isFull(s *stack) bool {
-	return s.head == len(s.s)-1
+// isFull - проверка очереди на заполненность
+func isFull(q *queue) bool {
+	return q.high == q.size-1
 }
 
-// printStack - вывод стека
-func printStack(s *stack) {
-	if s.head == -1 {
-		fmt.Println("Стек пуст")
+// printQueue - вывод очереди
+func printQueue(q *queue) {
+	if q.low == -1 || q.low > q.high {
+		fmt.Println("Очередь пуста")
 		return
 	}
-
-	fmt.Print("Стек (сверху вниз): ")
-	for i := s.head; i >= 0; i-- {
-		fmt.Print(s.s[i], " ")
+	fmt.Print("Очередь (слева направо): ")
+	for i := q.low; i <= q.high; i++ {
+		fmt.Print(q.s[i], " ")
 	}
 	fmt.Println()
 }
-
 func main() {
-	// Стек
-	fmt.Println("Стек")
+	fmt.Println("Очередь")
 
-	s := newStack(5)
+	q := newQueue(5)
 
-	fmt.Println("isEmpty:", isEmpty(s))
-	fmt.Println("isFull:", isFull(s))
+	push(q, "a")
+	push(q, "b")
+	push(q, "c")
 
-	push(s, 10)
-	push(s, 20)
-	push(s, 30)
+	printQueue(q)
 
-	printStack(s)
-
-	fmt.Println("Pop:", pop(s))
-	fmt.Println("Peek:", peek(s))
-
-	printStack(s)
+	fmt.Println("Pop:", pop(q))
+	printQueue(q)
 }
